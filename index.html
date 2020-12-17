@@ -134,7 +134,7 @@ function step(ts) {
 		player.setPos(x, y);
 	}
 
-	phase = ts/1000/3.5*2*Math.PI;
+	phase = ts/1000/3*2*Math.PI;
 	x = Math.sin(phase);
 	y = Math.cos(phase);
 	
