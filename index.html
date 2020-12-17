@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8"/>
 
+<div>
 <select required onchange="selectSound(this.value)">
 <option selected value="silence">No sound</option>
 <option value="pitch">Pitch</option>
@@ -8,7 +9,11 @@
 <option value="pitch_pan">Pitch and pan</option>
 <option value="dual_pitch">Dual pitch</option>
 </select>
-
+</div>
+<div>
+<div>Sound speed coefficient <span id="sound_coeff_label"></span></div>
+<input type="range" min="0.5" max="1.5" value="1" step=0.1 id="sound_coeff" onchange="update_sound_coeff(this.value)">
+</div>
 <div id="target" style="position: fixed;">o</div>
 
 <script>
@@ -21,7 +26,7 @@ function connect(...nodes) {
 	}
 }
 
-const AUDIO_RAMP = 1/60;
+const AUDIO_RAMP = 1/30;
 
 function setParam(param, value) {
 	param.linearRampToValueAtTime(value, audioContext.currentTime + AUDIO_RAMP);
@@ -113,6 +118,14 @@ let stereo_pitch_player = {
 }
 
 let player = undefined;
+let sound_coeff = 1.0;
+
+function update_sound_coeff(value) {
+	sound_coeff = value;
+	document.querySelector("#sound_coeff_label").innerHTML = sound_coeff;
+}
+
+update_sound_coeff(sound_coeff);
 
 let players = {
 	silence: undefined,
@@ -126,7 +139,7 @@ let players = {
 const target = document.querySelector("#target");
 
 function step(ts) {
-	let phase = ts/1000/3*2*Math.PI;
+	let phase = ts/1000/3*2*Math.PI*sound_coeff;
 	let x = Math.sin(phase);
 	let y = Math.cos(phase);
 	
