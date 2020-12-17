@@ -1,0 +1,153 @@
+<meta charset="utf-8"/>
+
+<select required onchange="selectSound(this.value)">
+<option selected value="silence">No sound</option>
+<option value="pitch">Pitch</option>
+<option value="pan">Pan</option>
+<option value="pitch_pan">Pitch and pan</option>
+<option value="dual_pitch">Dual pitch</option>
+</select>
+
+<div id="target" style="position: fixed;">o</div>
+
+<script>
+
+const audioContext = new AudioContext();
+
+function connect(...nodes) {
+	for(const i of Array(nodes.length - 1).keys()) {
+		nodes[i].connect(nodes[i+1]);
+	}
+}
+
+const AUDIO_RAMP = 1/60;
+
+function setParam(param, value) {
+	param.linearRampToValueAtTime(value, audioContext.currentTime + AUDIO_RAMP);
+}
+
+let sine_player = {
+	setPos: function (x, y) {
+		if(!this.oscillator) return;
+		setParam(this.oscillator.frequency, (y + 1)/4*440 + 440);
+	},
+
+	play: function() {
+		this.oscillator = audioContext.createOscillator();
+		connect(this.oscillator, audioContext.destination);
+		this.oscillator.start();
+	},
+
+	stop: function() {
+		this.oscillator.stop();
+	}
+}
+
+let dual_sine_player = {
+	setPos: function (x, y) {
+		if(!this.oscillator_x) return;
+		setParam(this.oscillator_y.frequency, (y + 1)/4*440 + 440);
+		//setParam(this.oscillator_x.frequency, (x + 1)/4*440 + 440);
+		setParam(this.oscillator_x.frequency, (x + 1)/4*880 + 880);
+	},
+
+	play: function() {
+		this.oscillator = audioContext.createOscillator();
+		this.oscillator_x = audioContext.createOscillator();
+		this.oscillator_y = audioContext.createOscillator();
+		gain = audioContext.createGain()
+		gain.gain.value = 0.5
+		this.oscillator_x.connect(gain)
+		this.oscillator_y.connect(gain)
+		connect(gain, audioContext.destination);
+		this.oscillator_x.start();
+		this.oscillator_y.start();
+	},
+
+	stop: function() {
+		this.oscillator_y.stop();
+		this.oscillator_x.stop();
+	}
+}
+
+let stereo_sine_player = {
+	setPos: function (x, y) {
+		if(!this.oscillator) return;
+		setParam(this.panner.pan, x);
+	},
+
+	play: function() {
+		this.oscillator = audioContext.createOscillator();
+		this.oscillator.frequency.value = 440;
+		this.panner = audioContext.createStereoPanner();
+		
+		connect(this.oscillator, this.panner, audioContext.destination);
+		this.oscillator.start();
+	},
+
+	stop: function() {
+		this.oscillator.stop();
+	}
+}
+
+let stereo_pitch_player = {
+	setPos: function (x, y) {
+		if(!this.oscillator) return;
+		setParam(this.oscillator.frequency, (y + 1)/4*440 + 440);
+		setParam(this.panner.pan, x);
+	},
+
+	play: function() {
+		this.oscillator = audioContext.createOscillator();
+		this.panner = audioContext.createStereoPanner();
+		
+		this.oscillator.connect(this.panner);
+		this.panner.connect(audioContext.destination);
+		this.oscillator.start();
+	},
+
+	stop: function() {
+		this.oscillator.stop();
+	}
+}
+
+let player = undefined;
+
+let players = {
+	silence: undefined,
+	pitch: sine_player,
+	pan: stereo_sine_player,
+	pitch_pan: stereo_pitch_player,
+	dual_pitch: dual_sine_player,
+}
+
+
+const target = document.querySelector("#target");
+
+function step(ts) {
+	let phase = ts/1000/3*2*Math.PI;
+	let x = Math.sin(phase);
+	let y = Math.cos(phase);
+	
+	const h = window.innerHeight;
+	const w = window.innerHeight;
+	target.style.top = (-y + 1)/2*h*0.8 + h*0.1 + "px";
+	target.style.left = (x + 1)/2*h*0.9 + w/2 + "px";
+	if(player) {
+		player.setPos(x, y);
+	}
+	requestAnimationFrame(step);
+}
+requestAnimationFrame(step);
+
+function selectSound(sound) {
+	if(player) {
+		player.stop();
+	}
+	
+	player = players[sound];
+	if(player) {
+		player.play();
+	}
+}
+</script>
