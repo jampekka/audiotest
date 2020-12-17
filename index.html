@@ -130,6 +130,18 @@ function step(ts) {
 	let x = Math.sin(phase);
 	let y = Math.cos(phase);
 	
+	if(player) {
+		player.setPos(x, y);
+	}
+
+	phase = ts/1000/3.5*2*Math.PI;
+	x = Math.sin(phase);
+	y = Math.cos(phase);
+	
+	if(player) {
+		player.setPos(x, y);
+	}
+	
 	const h = window.innerHeight;
 	const w = window.innerWidth;
 	let radius = Math.min(h, w)*0.5*0.8;
