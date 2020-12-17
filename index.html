@@ -131,9 +131,10 @@ function step(ts) {
 	let y = Math.cos(phase);
 	
 	const h = window.innerHeight;
-	const w = window.innerHeight;
-	target.style.top = (-y + 1)/2*h*0.8 + h*0.1 + "px";
-	target.style.left = (x + 1)/2*h*0.9 + w/2 + "px";
+	const w = window.innerWidth;
+	let radius = Math.min(h, w)*0.5*0.8;
+	target.style.top = -y*radius + h/2 + "px";
+	target.style.left = x*radius + w/2 + "px";
 	if(player) {
 		player.setPos(x, y);
 	}
