@@ -138,18 +138,12 @@ function step(ts) {
 	x = Math.sin(phase);
 	y = Math.cos(phase);
 	
-	if(player) {
-		player.setPos(x, y);
-	}
-	
 	const h = window.innerHeight;
 	const w = window.innerWidth;
 	let radius = Math.min(h, w)*0.5*0.8;
 	target.style.top = -y*radius + h/2 + "px";
 	target.style.left = x*radius + w/2 + "px";
-	if(player) {
-		player.setPos(x, y);
-	}
+
 	requestAnimationFrame(step);
 }
 requestAnimationFrame(step);
